@@ -28,23 +28,33 @@ const aj = arcjet({
 
 // Create base Clerk middleware
 const clerk = clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth(); // Ensure you're correctly awaiting auth().
+  const { userId } = await auth(); // Ensure you're correctly awaiting auth()
 
+  // Check if the user is not authenticated and if the route is protected
   if (!userId && isProtectedRoute(req)) {
-    const { redirectToSignIn } = await auth();
-    return redirectToSignIn(); // Redirect to sign-in if not authenticated
+    const { redirectToSignIn } = await auth(); // Get the redirect function
+    return redirectToSignIn(); // Redirect to sign-in page if not authenticated
   }
 
   return NextResponse.next(); // Allow the request to continue
 });
 
-// Chain middlewares - ArcJet runs first, then Clerk
+// The main middleware function to chain ArcJet and Clerk middlewares
 export default async function middleware(req) {
-  const arcjetResponse = await aj(req); // Run ArcJet middleware first
-  if (arcjetResponse) return arcjetResponse; // If ArcJet blocks, stop here.
+  try {
+    // Run ArcJet middleware first
+    const arcjetResponse = await aj(req); // Await the ArcJet middleware
+    if (arcjetResponse) {
+      return arcjetResponse; // Return early if ArcJet blocks the request
+    }
 
-  const clerkResponse = await clerk(req); // Run Clerk middleware next
-  return clerkResponse || NextResponse.next(); // Proceed if Clerk allows
+    // Run Clerk middleware second
+    const clerkResponse = await clerk(req); // Await Clerk middleware
+    return clerkResponse || NextResponse.next(); // Return Clerk response or continue
+  } catch (error) {
+    console.error("Middleware Error: ", error); // Log any middleware errors for debugging
+    return NextResponse.error(); // Return a generic error response if something fails
+  }
 }
 
 export const config = {
