@@ -70,16 +70,25 @@ export function AccountCard({ account }) {
             {type.charAt(0) + type.slice(1).toLowerCase()} Account
           </p>
         </CardContent>
-        <CardFooter className="flex justify-between text-sm text-muted-foreground">
+        <CardFooter className="flex justify-between text-sm text-muted-foreground relative">
           <div className="flex items-center">
             <ArrowUpRight className="mr-1 h-4 w-4 text-green-500" />
             Income
           </div>
+
           <div className="flex items-center">
             <ArrowDownRight className="mr-1 h-4 w-4 text-red-500" />
             Expense
           </div>
+
+
+          <div className="absolute inset-0 flex justify-center items-center">
+            
+            tap to explore
+          </div>
         </CardFooter>
+
+
       </Link>
     </Card>
   );
